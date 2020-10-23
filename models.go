@@ -19,7 +19,7 @@ func Unmarshal(r io.Reader) (map[string]Model, error) {
 
 // Model replresents one model from models.yml.
 type Model struct {
-	Attributes map[string]Attribute
+	Attributes map[string]*Attribute
 }
 
 // UnmarshalYAML decodes a yaml model to models.Model.
@@ -31,6 +31,7 @@ func (m *Model) UnmarshalYAML(node *yaml.Node) error {
 type Relation interface {
 	ToCollection() []string
 	ToField() ToField
+	List() bool
 }
 
 // Attribute is a field of a model.
@@ -55,7 +56,8 @@ func (a *Attribute) Relation() Relation {
 
 // AttributeRelation is a relation or relation-list field.
 type AttributeRelation struct {
-	To To `yaml:"to"`
+	To   To `yaml:"to"`
+	list bool
 }
 
 // ToCollection returns the names of the collections there the attribute points
@@ -69,9 +71,15 @@ func (r AttributeRelation) ToField() ToField {
 	return r.To.Field
 }
 
+// List returns true, if the attribute is a relation-list
+func (r AttributeRelation) List() bool {
+	return r.list
+}
+
 // AttributeGenericRelation is a generic-relation or generic-relation-list fiedl.
 type AttributeGenericRelation struct {
-	To ToGeneric `yaml:"to"`
+	To   ToGeneric `yaml:"to"`
+	list bool
 }
 
 // ToCollection returns all collection, where the generic field could point to.
@@ -82,6 +90,11 @@ func (r AttributeGenericRelation) ToCollection() []string {
 // ToField returns the field where the attribute points to.
 func (r AttributeGenericRelation) ToField() ToField {
 	return r.To.Field
+}
+
+// List returns true, if the attribute is a generic-relation-list
+func (r AttributeGenericRelation) List() bool {
+	return r.list
 }
 
 // AttributeTemplate represents a template field.
@@ -106,22 +119,27 @@ func (a *Attribute) UnmarshalYAML(value *yaml.Node) error {
 	}
 
 	a.Type = typer.Type
+	var list bool
 	switch typer.Type {
-	case "relation":
-		fallthrough
 	case "relation-list":
+		list = true
+		fallthrough
+	case "relation":
 		var relation AttributeRelation
 		if err := value.Decode(&relation); err != nil {
 			return fmt.Errorf("invalid object of type %s at line %d object: %w", typer.Type, value.Line, err)
 		}
+		relation.list = list
 		a.relation = &relation
-	case "generic-relation":
-		fallthrough
 	case "generic-relation-list":
+		list = true
+		fallthrough
+	case "generic-relation":
 		var relation AttributeGenericRelation
 		if err := value.Decode(&relation); err != nil {
 			return fmt.Errorf("invalid object of type %s at line %d object: %w", typer.Type, value.Line, err)
 		}
+		relation.list = list
 		a.relation = &relation
 	case "template":
 		var template AttributeTemplate
