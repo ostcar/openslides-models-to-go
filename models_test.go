@@ -34,11 +34,11 @@ func TestRelation(t *testing.T) {
 		t.Errorf("Can not unmarshal yml: %v", err)
 	}
 
-	if got["model"].Attributes["other_id"].Relation().List() {
+	if got["model"].Fields["other_id"].Relation().List() {
 		t.Errorf("model/other_id is a list")
 	}
 
-	if !got["model"].Attributes["other_ids"].Relation().List() {
+	if !got["model"].Fields["other_ids"].Relation().List() {
 		t.Errorf("model/other_ids is not a list")
 	}
 
