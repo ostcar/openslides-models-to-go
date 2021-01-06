@@ -1,5 +1,7 @@
 package models
 
+//go:generate sh -c "go run gen_example_data/main.go && go fmt example-data.json.go"
+
 import (
 	"fmt"
 	"io"
