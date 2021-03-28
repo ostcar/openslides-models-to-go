@@ -1633,7 +1633,7 @@ var ExampleData = map[string]json.RawMessage{
 	"projection/3/options":                 []byte(`{}`),
 	"projection/3/preview_projector_id":    []byte(`null`),
 	"projection/3/stable":                  []byte(`true`),
-	"projection/3/type":                    []byte(`"current-list-of-speakers"`),
+	"projection/3/type":                    []byte(`"current_list_of_speakers"`),
 	"projection/3/weight":                  []byte(`1`),
 	"projection/4/content_object_id":       []byte(`"assignment/1"`),
 	"projection/4/current_projector_id":    []byte(`1`),
