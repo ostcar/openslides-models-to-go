@@ -31,40 +31,42 @@ func (m *Model) UnmarshalYAML(node *yaml.Node) error {
 
 // Field of a model.
 type Field struct {
-	Type     string
-	relation Relation
-	template *AttributeTemplate
+	Type            string
+	restrictionMode string
+	relation        Relation
+	template        *AttributeTemplate
 }
 
 // Relation returns the relation object if the Field is a relation or a
 // template with a relation. In other cases, it returns nil.
-func (a *Field) Relation() Relation {
-	if a.relation != nil {
-		return a.relation
+func (f *Field) Relation() Relation {
+	if f.relation != nil {
+		return f.relation
 	}
 
-	if a.template != nil && a.template.Fields.relation != nil {
-		return a.template.Fields.relation
+	if f.template != nil && f.template.Fields.relation != nil {
+		return f.template.Fields.relation
 	}
 	return nil
 }
 
-// UnmarshalYAML decodes a model attribute from yaml.
-func (a *Field) UnmarshalYAML(value *yaml.Node) error {
-	var s string
-	if err := value.Decode(&s); err == nil {
-		a.Type = s
-		return nil
-	}
+// RestrictionMode returns the restriction mode the field belongs to.
+func (f *Field) RestrictionMode() string {
+	return f.restrictionMode
+}
 
+// UnmarshalYAML decodes a model attribute from yaml.
+func (f *Field) UnmarshalYAML(value *yaml.Node) error {
 	var typer struct {
-		Type string `yaml:"type"`
+		Type            string `yaml:"type"`
+		RestrictionMode string `yaml:"restriction_mode"`
 	}
 	if err := value.Decode(&typer); err != nil {
 		return fmt.Errorf("field object without type: %w", err)
 	}
 
-	a.Type = typer.Type
+	f.Type = typer.Type
+	f.restrictionMode = typer.RestrictionMode
 	var list bool
 	switch typer.Type {
 	case "relation-list":
@@ -76,7 +78,7 @@ func (a *Field) UnmarshalYAML(value *yaml.Node) error {
 			return fmt.Errorf("invalid object of type %s at line %d object: %w", typer.Type, value.Line, err)
 		}
 		relation.list = list
-		a.relation = &relation
+		f.relation = &relation
 	case "generic-relation-list":
 		list = true
 		fallthrough
@@ -86,13 +88,13 @@ func (a *Field) UnmarshalYAML(value *yaml.Node) error {
 			return fmt.Errorf("invalid object of type %s at line %d object: %w", typer.Type, value.Line, err)
 		}
 		relation.list = list
-		a.relation = &relation
+		f.relation = &relation
 	case "template":
 		var template AttributeTemplate
 		if err := value.Decode(&template); err != nil {
 			return fmt.Errorf("invalid object of type template object in line %d: %w", value.Line, err)
 		}
-		a.template = &template
+		f.template = &template
 	}
 	return nil
 }
