@@ -57,6 +57,14 @@ func (f *Field) RestrictionMode() string {
 
 // UnmarshalYAML decodes a model attribute from yaml.
 func (f *Field) UnmarshalYAML(value *yaml.Node) error {
+	// Check if the value is a string. In this case, the string is the type.
+	// This is only allowed for template fields.
+	var s string
+	if err := value.Decode(&s); err == nil {
+		f.Type = s
+		return nil
+	}
+
 	var typer struct {
 		Type            string `yaml:"type"`
 		RestrictionMode string `yaml:"restriction_mode"`
