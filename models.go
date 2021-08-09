@@ -34,7 +34,7 @@ type Field struct {
 	Type            string
 	restrictionMode string
 	relation        Relation
-	template        *AttributeTemplate
+	Template        *AttributeTemplate
 }
 
 // Relation returns the relation object if the Field is a relation or a
@@ -44,8 +44,8 @@ func (f *Field) Relation() Relation {
 		return f.relation
 	}
 
-	if f.template != nil && f.template.Fields.relation != nil {
-		return f.template.Fields.relation
+	if f.Template != nil && f.Template.Fields.relation != nil {
+		return f.Template.Fields.relation
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func (f *Field) UnmarshalYAML(value *yaml.Node) error {
 		if err := value.Decode(&template); err != nil {
 			return fmt.Errorf("invalid object of type template object in line %d: %w", value.Line, err)
 		}
-		f.template = &template
+		f.Template = &template
 	}
 	return nil
 }
@@ -230,7 +230,7 @@ func (r AttributeGenericRelation) ToCollections() []ToCollectionField {
 
 // AttributeTemplate represents a template field.
 type AttributeTemplate struct {
-	Replacement string `yaml:"replacement"`
+	Replacement string `yaml:"replacement_collection"`
 	Fields      Field  `yaml:"fields"`
 }
 
